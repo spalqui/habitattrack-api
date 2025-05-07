@@ -1,2 +1,2 @@
-# habitattrack-api
- HabitatTrack - Rental Property Management API
+# HabitatTrack API
+HabitatTrack - Rental Property Management API
