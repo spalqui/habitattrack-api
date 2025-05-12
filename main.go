@@ -17,7 +17,10 @@ func main() {
 
 	r := gin.Default()
 
-	propertyRepo := repositories.NewFirestorePropertyRepository()
+	propertyRepo, err := repositories.NewFirestorePropertyRepository()
+	if err != nil {
+		log.Fatalf("error creating firestore property repository: %v", err)
+	}
 
 	propertyService := services.NewPropertyService(propertyRepo)
 
@@ -28,7 +31,7 @@ func main() {
 
 	r.GET("/property/:id", propertyHandler.GetByID)
 
-	err := r.Run()
+	err = r.Run()
 	if err != nil {
 		log.Fatalf("failed to run: %v", err)
 	}
