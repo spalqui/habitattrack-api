@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"os"
@@ -14,10 +15,16 @@ import (
 )
 
 func main() {
-	c := config.New(
-		config.WithPort(":8080"),
-		config.WithGoogleCloudProject("habitattrack-dev"),
+	port := os.Getenv("PORT")
+	googleCloudProject := os.Getenv("GOOGLE_CLOUD_PROJECT")
+
+	c, err := config.New(
+		config.WithPort(port),
+		config.WithGoogleCloudProject(googleCloudProject),
 	)
+	if err != nil {
+		log.Fatalf("error creating config: %v", err)
+	}
 
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
@@ -37,7 +44,7 @@ func main() {
 
 	r.GET("/property/:id", propertyHandler.GetByID)
 
-	err = r.Run(c.Port)
+	err = r.Run(fmt.Sprintf(":%d", c.Port))
 	if err != nil {
 		log.Fatalf("failed to run: %v", err)
 	}
