@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 )
@@ -14,8 +13,8 @@ func TestWithPort(t *testing.T) {
 	}{
 		{"Valid port", "8080", nil},
 		{"Zero port", "0", ErrZeroPort},
-		{"Port below range", "1023", fmt.Errorf(ErrInvalidPort, 1023)},
-		{"Port above range", "65536", fmt.Errorf(ErrInvalidPort, 65536)},
+		{"Port below range", "1023", ErrPortOutOfRange},
+		{"Port above range", "65536", ErrPortOutOfRange},
 	}
 
 	for _, tt := range tests {
@@ -48,7 +47,7 @@ func TestWithGoogleCloudProject(t *testing.T) {
 		expectErr error
 	}{
 		{"Valid project", "my-project", nil},
-		{"Empty project", "", fmt.Errorf(ErrInvalidGoogleCloudProject, "")},
+		{"Empty project", "", ErrEmptyGoogleCloudProject},
 	}
 
 	for _, tt := range tests {

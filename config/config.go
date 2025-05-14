@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	ErrZeroPort                  = errors.New("port cannot be zero")
-	ErrInvalidPort               = "invalid port: %d it must be between 1024 and 65535"
-	ErrInvalidGoogleCloudProject = "invalid google cloud project: %s"
+	ErrZeroPort                = errors.New("port cannot be zero")
+	ErrPortOutOfRange          = errors.New("port must be between 1024 and 65535")
+	ErrEmptyGoogleCloudProject = errors.New("google cloud project cannot be empty")
 )
 
 type Config struct {
@@ -27,7 +27,7 @@ func New(options ...Option) (*Config, error) {
 	for _, option := range options {
 		err := option(config)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("applying option: %w", err)
 		}
 	}
 	return config, nil
@@ -36,12 +36,13 @@ func New(options ...Option) (*Config, error) {
 func WithPort(port string) Option {
 	return func(c *Config) error {
 		if port == "" {
+
 			return nil
 		}
 
 		portInt, err := strconv.Atoi(port)
 		if err != nil {
-			return fmt.Errorf(ErrInvalidPort, portInt)
+			return fmt.Errorf("parsing port: %w", err)
 		}
 
 		if portInt == 0 {
@@ -49,7 +50,7 @@ func WithPort(port string) Option {
 		}
 
 		if portInt < 1024 || portInt > 65535 {
-			return fmt.Errorf(ErrInvalidPort, portInt)
+			return ErrPortOutOfRange
 		}
 
 		c.Port = portInt
@@ -60,7 +61,7 @@ func WithPort(port string) Option {
 func WithGoogleCloudProject(project string) Option {
 	return func(c *Config) error {
 		if project == "" {
-			return fmt.Errorf(ErrInvalidGoogleCloudProject, project)
+			return ErrEmptyGoogleCloudProject
 		}
 		c.GoogleCloudProject = project
 		return nil
