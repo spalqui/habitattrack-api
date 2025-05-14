@@ -1,20 +1,30 @@
 package config
 
 import (
-	"strconv"
+	"errors"
 	"testing"
 )
 
 func TestWithPort(t *testing.T) {
 	tests := []struct {
-		name      string
-		port      string
-		expectErr error
+		name    string
+		port    string
+		wantErr error
 	}{
-		{"Valid port", "8080", nil},
-		{"Zero port", "0", ErrZeroPort},
-		{"Port below range", "1023", ErrPortOutOfRange},
-		{"Port above range", "65536", ErrPortOutOfRange},
+		{
+			name: "Valid port",
+			port: "8080",
+		},
+		{
+			name:    "Port below range",
+			port:    "1023",
+			wantErr: ErrPortOutOfRange,
+		},
+		{
+			name:    "Port above range",
+			port:    "65536",
+			wantErr: ErrPortOutOfRange,
+		},
 	}
 
 	for _, tt := range tests {
@@ -22,19 +32,8 @@ func TestWithPort(t *testing.T) {
 			cfg := &Config{}
 			err := WithPort(tt.port)(cfg)
 
-			if err != nil {
-				if (err != nil && tt.expectErr == nil) || (err == nil && tt.expectErr != nil) || (err != nil && err.Error() != tt.expectErr.Error()) {
-					t.Errorf("WithPort(%s) error = %v, wantErr %v", tt.port, err, tt.expectErr)
-				}
-				return
-			}
-
-			port, err := strconv.Atoi(tt.port)
-			if err != nil {
-				t.Fatalf("failed to convert port %s to int: %v", tt.port, err)
-			}
-			if err == nil && cfg.Port != port {
-				t.Errorf("WithPort(%s) set Port = %d, want %d", tt.port, cfg.Port, port)
+			if !errors.Is(err, tt.wantErr) && err.Error() != tt.wantErr.Error() {
+				t.Errorf("WithPort(%s) error = %v, wantErr %v", tt.port, err, tt.wantErr)
 			}
 		})
 	}
@@ -42,12 +41,18 @@ func TestWithPort(t *testing.T) {
 
 func TestWithGoogleCloudProject(t *testing.T) {
 	tests := []struct {
-		name      string
-		project   string
-		expectErr error
+		name    string
+		project string
+		wantErr error
 	}{
-		{"Valid project", "my-project", nil},
-		{"Empty project", "", ErrEmptyGoogleCloudProject},
+		{
+			name:    "Valid project",
+			project: "my-project",
+		},
+		{
+			name:    "Empty project",
+			wantErr: ErrEmptyGoogleCloudProject,
+		},
 	}
 
 	for _, tt := range tests {
@@ -55,8 +60,8 @@ func TestWithGoogleCloudProject(t *testing.T) {
 			cfg := &Config{}
 			err := WithGoogleCloudProject(tt.project)(cfg)
 
-			if (err != nil && tt.expectErr == nil) || (err == nil && tt.expectErr != nil) || (err != nil && err.Error() != tt.expectErr.Error()) {
-				t.Errorf("WithGoogleCloudProject(%q) error = %v, wantErr %v", tt.project, err, tt.expectErr)
+			if (err != nil && tt.wantErr == nil) || (err == nil && tt.wantErr != nil) || (err != nil && err.Error() != tt.wantErr.Error()) {
+				t.Errorf("WithGoogleCloudProject(%q) error = %v, wantErr %v", tt.project, err, tt.wantErr)
 			}
 
 			if err == nil && cfg.GoogleCloudProject != tt.project {

@@ -7,7 +7,6 @@ import (
 )
 
 var (
-	ErrZeroPort                = errors.New("port cannot be zero")
 	ErrPortOutOfRange          = errors.New("port must be between 1024 and 65535")
 	ErrEmptyGoogleCloudProject = errors.New("google cloud project cannot be empty")
 )
@@ -21,7 +20,7 @@ type Option func(*Config) error
 
 func New(options ...Option) (*Config, error) {
 	config := &Config{
-		Port: 8080,
+		Port: 8080, // Default port
 	}
 
 	for _, option := range options {
