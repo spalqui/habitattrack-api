@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"strconv"
 )
 
@@ -37,7 +36,6 @@ func New(options ...Option) (*Config, error) {
 func WithPort(port string) Option {
 	return func(c *Config) error {
 		if port == "" {
-			slog.Warn("port is empty, using default port 8080")
 			return nil
 		}
 
@@ -47,7 +45,6 @@ func WithPort(port string) Option {
 		}
 
 		if portInt == 0 {
-			slog.Warn("port is zero, using default port 8080")
 			return nil
 		}
 
