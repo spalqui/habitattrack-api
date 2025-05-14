@@ -30,7 +30,7 @@ func main() {
 
 	r := gin.Default()
 
-	propertyRepo, err := repositories.NewFirestorePropertyRepository()
+	propertyRepo, err := repositories.NewFirestorePropertyRepository(c.GoogleCloudProject)
 	if err != nil {
 		log.Fatalf("error creating firestore property repository: %v", err)
 	}

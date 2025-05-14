@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"os"
 
 	"cloud.google.com/go/firestore"
 
@@ -17,9 +16,9 @@ type FirestorePropertyRepository struct {
 	client *firestore.Client
 }
 
-func NewFirestorePropertyRepository() (PropertyRepository, error) {
+func NewFirestorePropertyRepository(googleCloudProjectID string) (PropertyRepository, error) {
 	ctx := context.Background()
-	client, err := firestore.NewClient(ctx, os.Getenv("GOOGLE_CLOUD_PROJECT"))
+	client, err := firestore.NewClient(ctx, googleCloudProjectID)
 	if err != nil {
 		return &FirestorePropertyRepository{}, err
 	}
