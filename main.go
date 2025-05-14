@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"log/slog"
@@ -30,7 +31,7 @@ func main() {
 
 	r := gin.Default()
 
-	propertyRepo, err := repositories.NewFirestorePropertyRepository(c.GoogleCloudProject)
+	propertyRepo, err := repositories.NewFirestorePropertyRepository(context.Background(), c.GoogleCloudProject)
 	if err != nil {
 		log.Fatalf("error creating firestore property repository: %v", err)
 	}

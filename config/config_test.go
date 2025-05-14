@@ -1,19 +1,22 @@
 package config
 
 import (
-	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWithPort(t *testing.T) {
 	tests := []struct {
-		name    string
-		port    string
-		wantErr error
+		name     string
+		port     string
+		wantErr  error
+		wantPort int
 	}{
 		{
-			name: "Valid port",
-			port: "8080",
+			name:     "Valid port",
+			port:     "8080",
+			wantPort: 8080,
 		},
 		{
 			name:    "Port below range",
@@ -32,9 +35,13 @@ func TestWithPort(t *testing.T) {
 			cfg := &Config{}
 			err := WithPort(tt.port)(cfg)
 
-			if !errors.Is(err, tt.wantErr) && err.Error() != tt.wantErr.Error() {
-				t.Errorf("WithPort(%s) error = %v, wantErr %v", tt.port, err, tt.wantErr)
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
 			}
+
+			assert.NoError(t, err)
+			assert.Equal(t, tt.wantPort, cfg.Port)
 		})
 	}
 }
@@ -60,13 +67,13 @@ func TestWithGoogleCloudProject(t *testing.T) {
 			cfg := &Config{}
 			err := WithGoogleCloudProject(tt.project)(cfg)
 
-			if (err != nil && tt.wantErr == nil) || (err == nil && tt.wantErr != nil) || (err != nil && err.Error() != tt.wantErr.Error()) {
-				t.Errorf("WithGoogleCloudProject(%q) error = %v, wantErr %v", tt.project, err, tt.wantErr)
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
 			}
 
-			if err == nil && cfg.GoogleCloudProject != tt.project {
-				t.Errorf("WithGoogleCloudProject(%q) set GoogleCloudProject = %q, want %q", tt.project, cfg.GoogleCloudProject, tt.project)
-			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.project, cfg.GoogleCloudProject)
 		})
 	}
 }

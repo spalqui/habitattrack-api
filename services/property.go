@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/spalqui/habitattrack-api/repositories"
 	"github.com/spalqui/habitattrack-api/types"
 )
@@ -16,5 +18,5 @@ func NewPropertyService(repo repositories.PropertyRepository) *PropertyService {
 }
 
 func (s *PropertyService) GetPropertyByID(id string) (types.Property, error) {
-	return s.repo.GetPropertyByID(id)
+	return s.repo.GetPropertyByID(context.Background(), id)
 }
