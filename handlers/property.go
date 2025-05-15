@@ -12,7 +12,6 @@ import (
 	"github.com/spalqui/habitattrack-api/constants"
 	"github.com/spalqui/habitattrack-api/repositories"
 	"github.com/spalqui/habitattrack-api/services"
-	"github.com/spalqui/habitattrack-api/types"
 )
 
 type PropertyHandler struct {
@@ -52,7 +51,7 @@ func (h *PropertyHandler) GetByID(c *gin.Context) {
 	returnOK(c, property, nil)
 }
 
-func (h *PropertyHandler) GetProperties(c *gin.Context) {
+func (h *PropertyHandler) List(c *gin.Context) {
 	limit := constants.MaxPageSize
 	cursor := c.Query("cursor")
 
@@ -113,26 +112,33 @@ func (h *PropertyHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var property types.Property
-	if err := c.ShouldBindJSON(&property); err != nil {
+	var req UpdatePropertyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		h.logger.Error("invalid request body", slog.Any("error", err))
 		returnError(c, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
-	property.ID = id
-	if err := h.propertyService.UpdateProperty(c.Request.Context(), id, &property); err != nil {
+	property, err := h.propertyService.GetPropertyByID(c.Request.Context(), id)
+	if err != nil {
 		if errors.Is(err, repositories.ErrPropertyNotFound) {
 			h.logger.Warn("property not found", slog.String("id", id))
 			returnError(c, http.StatusNotFound, "property not found")
 			return
 		}
+		h.logger.Error("failed to get property", slog.String("id", id), slog.Any("error", err))
+		returnError(c, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		return
+	}
+
+	req.ApplyUpdates(&property)
+	if err := h.propertyService.UpdateProperty(c.Request.Context(), id, &property); err != nil {
 		h.logger.Error("failed to update property", slog.String("id", id), slog.Any("error", err))
 		returnError(c, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 		return
 	}
 
-	returnOK(c, nil, nil)
+	returnOK(c, property, nil)
 }
 
 func (h *PropertyHandler) Delete(c *gin.Context) {

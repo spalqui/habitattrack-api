@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"cloud.google.com/go/firestore"
+	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -102,7 +103,7 @@ func (r *FirestorePropertyRepository) GetProperties(ctx context.Context, limit i
 	defer cancel()
 
 	query := r.client.Collection(propertyCollection).
-		OrderBy("createdAt", firestore.Desc).
+		//OrderBy("createdAt", firestore.Desc).
 		Limit(limit)
 
 	if cursor != "" {
@@ -116,6 +117,9 @@ func (r *FirestorePropertyRepository) GetProperties(ctx context.Context, limit i
 	for {
 		doc, err := iter.Next()
 		if err != nil {
+			if errors.Is(err, iterator.Done) {
+				break
+			}
 			if status.Code(err) == codes.NotFound {
 				break
 			}

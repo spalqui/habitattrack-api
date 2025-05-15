@@ -46,10 +46,10 @@ func main() {
 	propertyRouter := r.Group("/property")
 	{
 		propertyRouter.GET("/:id", propertyHandler.GetByID)
-		//r.GET("/", propertyHandler.List)
+		propertyRouter.GET("/", propertyHandler.List)
 		propertyRouter.POST("/", propertyHandler.Create)
-		//r.PUT("/:id", propertyHandler.Update)
-		//r.DELETE("/:id", propertyHandler.Delete)
+		propertyRouter.PATCH("/:id", propertyHandler.Update)
+		propertyRouter.DELETE("/:id", propertyHandler.Delete)
 	}
 
 	r.GET("/health", healthHandler.Check)
