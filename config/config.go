@@ -7,20 +7,25 @@ import (
 )
 
 var (
+	DefaultPort                = 8080
+	DefaultFirestoreDatabaseID = "habitattrack"
+
 	ErrPortOutOfRange          = errors.New("port must be between 1024 and 65535")
 	ErrEmptyGoogleCloudProject = errors.New("google cloud project cannot be empty")
 )
 
 type Config struct {
-	Port               int
-	GoogleCloudProject string
+	Port       int
+	ProjectID  string
+	DatabaseID string
 }
 
 type Option func(*Config) error
 
 func New(options ...Option) (*Config, error) {
 	config := &Config{
-		Port: 8080, // Default port
+		Port:       DefaultPort, // Default port
+		DatabaseID: DefaultFirestoreDatabaseID,
 	}
 
 	for _, option := range options {
@@ -62,7 +67,17 @@ func WithGoogleCloudProject(project string) Option {
 		if project == "" {
 			return ErrEmptyGoogleCloudProject
 		}
-		c.GoogleCloudProject = project
+		c.ProjectID = project
+		return nil
+	}
+}
+
+func WithFirestoreDatabase(databaseID string) Option {
+	return func(c *Config) error {
+		if databaseID == "" {
+			return nil
+		}
+		c.DatabaseID = databaseID
 		return nil
 	}
 }

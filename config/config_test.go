@@ -73,7 +73,7 @@ func TestWithGoogleCloudProject(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
-			assert.Equal(t, tt.project, cfg.GoogleCloudProject)
+			assert.Equal(t, tt.project, cfg.ProjectID)
 		})
 	}
 }

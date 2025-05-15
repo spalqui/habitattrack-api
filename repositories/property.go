@@ -4,20 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/spalqui/habitattrack-api/constants"
 	"github.com/spalqui/habitattrack-api/types"
 )
 
 const (
 	propertyCollection = "properties"
-	defaultTimeout     = 30 * time.Second
-	defaultPageSize    = 10
-	maxPageSize        = 100
 )
 
 var (
@@ -32,7 +29,8 @@ var (
 type PropertyRepository interface {
 	GetPropertyByID(ctx context.Context, id string) (types.Property, error)
 	GetProperties(ctx context.Context, limit int, cursor string) ([]types.Property, string, error)
-	UpdateProperty(ctx context.Context, id string, property types.Property) error
+	CreateProperty(ctx context.Context, property *types.Property) error
+	UpdateProperty(ctx context.Context, id string, property *types.Property) error
 	DeleteProperty(ctx context.Context, id string) error
 	Close() error
 }
@@ -42,15 +40,15 @@ type FirestorePropertyRepository struct {
 	client *firestore.Client
 }
 
-func NewFirestorePropertyRepository(ctx context.Context, projectID string) (PropertyRepository, error) {
+func NewFirestorePropertyRepository(ctx context.Context, projectID string, databaseID string) (PropertyRepository, error) {
 	if projectID == "" {
 		return nil, ErrEmptyProjectID
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 
-	client, err := firestore.NewClient(ctx, projectID)
+	client, err := firestore.NewClientWithDatabase(ctx, projectID, databaseID)
 	if err != nil {
 		return nil, fmt.Errorf("creating firestore client: %w", err)
 	}
@@ -74,7 +72,7 @@ func (r *FirestorePropertyRepository) GetPropertyByID(ctx context.Context, id st
 		return types.Property{}, ErrEmptyPropertyID
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 
 	doc, err := r.client.Collection(propertyCollection).Doc(id).Get(ctx)
@@ -91,19 +89,20 @@ func (r *FirestorePropertyRepository) GetPropertyByID(ctx context.Context, id st
 		return types.Property{}, fmt.Errorf("parsing property data: %w", err)
 	}
 
-	return types.Property{}, nil
+	property.ID = doc.Ref.ID
+	return property, nil
 }
 
 func (r *FirestorePropertyRepository) GetProperties(ctx context.Context, limit int, cursor string) ([]types.Property, string, error) {
-	if limit < 1 || limit > maxPageSize {
+	if limit < 1 || limit > constants.MaxPageSize {
 		return nil, "", ErrInvalidLimit
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 
 	query := r.client.Collection(propertyCollection).
-		OrderBy("created_at", firestore.Desc).
+		OrderBy("createdAt", firestore.Desc).
 		Limit(limit)
 
 	if cursor != "" {
@@ -129,6 +128,8 @@ func (r *FirestorePropertyRepository) GetProperties(ctx context.Context, limit i
 			return nil, "", fmt.Errorf("parsing property data: %w", err)
 		}
 
+		property.ID = doc.Ref.ID
+
 		properties = append(properties, property)
 		cursor = doc.Ref.ID
 	}
@@ -136,15 +137,32 @@ func (r *FirestorePropertyRepository) GetProperties(ctx context.Context, limit i
 	return properties, cursor, nil
 }
 
-func (r *FirestorePropertyRepository) UpdateProperty(ctx context.Context, id string, property types.Property) error {
-	if id == "" {
-		return ErrEmptyPropertyID
-	}
-	if property == (types.Property{}) {
+func (r *FirestorePropertyRepository) CreateProperty(ctx context.Context, property *types.Property) error {
+	if *property == (types.Property{}) {
 		return ErrNilProperty
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
+	defer cancel()
+
+	docRef, _, err := r.client.Collection(propertyCollection).Add(ctx, property)
+	if err != nil {
+		return fmt.Errorf("adding property: %w", err)
+	}
+
+	property.ID = docRef.ID
+	return nil
+}
+
+func (r *FirestorePropertyRepository) UpdateProperty(ctx context.Context, id string, property *types.Property) error {
+	if id == "" {
+		return ErrEmptyPropertyID
+	}
+	if *property == (types.Property{}) {
+		return ErrNilProperty
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 
 	// Ensure the property exists before updating
@@ -161,6 +179,8 @@ func (r *FirestorePropertyRepository) UpdateProperty(ctx context.Context, id str
 		return fmt.Errorf("updating property: %w", err)
 	}
 
+	property.ID = docRef.Ref.ID
+
 	return nil
 }
 
@@ -169,7 +189,7 @@ func (r *FirestorePropertyRepository) DeleteProperty(ctx context.Context, id str
 		return ErrEmptyPropertyID
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
 
 	// Ensure the property exists before deleting
