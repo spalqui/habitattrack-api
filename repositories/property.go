@@ -21,11 +21,11 @@ const (
 )
 
 var (
-	ErrEmptyProjectID  = errors.New("project ID cannot be empty")
-	ErrEmptyPropertyID = errors.New("property ID cannot be empty")
-	ErrInvalidLimit    = errors.New("limit must be between 1 and 100")
-	ErrNilProperty     = errors.New("property cannot be nil")
-	ErrNotFound        = errors.New("property not found")
+	ErrEmptyProjectID   = errors.New("project ID cannot be empty")
+	ErrEmptyPropertyID  = errors.New("property ID cannot be empty")
+	ErrInvalidLimit     = errors.New("limit must be between 1 and 100")
+	ErrNilProperty      = errors.New("property cannot be nil")
+	ErrPropertyNotFound = errors.New("property not found")
 )
 
 // PropertyRepository defines the interface for property repository
@@ -80,7 +80,7 @@ func (r *FirestorePropertyRepository) GetPropertyByID(ctx context.Context, id st
 	doc, err := r.client.Collection(propertyCollection).Doc(id).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			return types.Property{}, ErrNotFound
+			return types.Property{}, ErrPropertyNotFound
 		}
 		return types.Property{}, fmt.Errorf("getting property by ID: %w", err)
 	}
@@ -151,7 +151,7 @@ func (r *FirestorePropertyRepository) UpdateProperty(ctx context.Context, id str
 	docRef, err := r.client.Collection(propertyCollection).Doc(id).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			return ErrNotFound
+			return ErrPropertyNotFound
 		}
 		return fmt.Errorf("checking property exists: %w", err)
 	}

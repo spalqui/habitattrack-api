@@ -1,14 +1,14 @@
 package handlers
 
 import (
-	"fmt"
+	"errors"
 	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/spalqui/habitattrack-api/repositories"
 	"github.com/spalqui/habitattrack-api/services"
-	"github.com/spalqui/habitattrack-api/types"
 )
 
 type PropertyHandler struct {
@@ -27,18 +27,23 @@ func NewPropertyHandler(
 }
 
 func (h *PropertyHandler) GetByID(c *gin.Context) {
-	h.logger.Info("Property GetByID called")
-
 	id := c.Param("id")
-
-	property, err := h.propertyService.GetPropertyByID(id)
-	if err != nil {
-		h.logger.Error(fmt.Sprintf("failed to get property by id (id: %s): %v", id, err))
-		c.JSON(http.StatusInternalServerError, types.InternalServerError{
-			Message: "Failed to retrieve property",
-		})
+	if id == "" {
+		h.logger.Error("property ID is missing")
+		returnError(c, http.StatusBadRequest, "property ID is missing")
 		return
 	}
 
-	c.JSON(200, property)
+	property, err := h.propertyService.GetPropertyByID(id)
+	if err != nil {
+		if errors.Is(err, repositories.ErrPropertyNotFound) {
+			h.logger.Warn("property not found", slog.String("id", id))
+			returnError(c, http.StatusNotFound, "property not found")
+			return
+		}
+		h.logger.Error("failed to get property", slog.String("id", id), slog.Any("error", err))
+		returnError(c, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+	}
+
+	returnOK(c, property, nil)
 }

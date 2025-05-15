@@ -43,8 +43,6 @@ func main() {
 
 	r.GET("/health", healthHandler.Check)
 
-	r.GET("/property/:id", propertyHandler.GetByID)
-
 	err = r.Run(fmt.Sprintf(":%d", c.Port))
 	if err != nil {
 		log.Fatalf("failed to run: %v", err)
