@@ -25,6 +25,7 @@ var (
 	ErrEmptyPropertyID = errors.New("property ID cannot be empty")
 	ErrInvalidLimit    = errors.New("limit must be between 1 and 100")
 	ErrNilProperty     = errors.New("property cannot be nil")
+	ErrNotFound        = errors.New("property not found")
 )
 
 // PropertyRepository defines the interface for property repository
@@ -79,7 +80,7 @@ func (r *FirestorePropertyRepository) GetPropertyByID(ctx context.Context, id st
 	doc, err := r.client.Collection(propertyCollection).Doc(id).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
-			return types.Property{}, nil
+			return types.Property{}, ErrNotFound
 		}
 		return types.Property{}, fmt.Errorf("getting property by ID: %w", err)
 	}
@@ -133,4 +134,57 @@ func (r *FirestorePropertyRepository) GetProperties(ctx context.Context, limit i
 	}
 
 	return properties, cursor, nil
+}
+
+func (r *FirestorePropertyRepository) UpdateProperty(ctx context.Context, id string, property types.Property) error {
+	if id == "" {
+		return ErrEmptyPropertyID
+	}
+	if property == (types.Property{}) {
+		return ErrNilProperty
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+
+	// Ensure the property exists before updating
+	docRef, err := r.client.Collection(propertyCollection).Doc(id).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return ErrNotFound
+		}
+		return fmt.Errorf("checking property exists: %w", err)
+	}
+
+	_, err = docRef.Ref.Set(ctx, property)
+	if err != nil {
+		return fmt.Errorf("updating property: %w", err)
+	}
+
+	return nil
+}
+
+func (r *FirestorePropertyRepository) DeleteProperty(ctx context.Context, id string) error {
+	if id == "" {
+		return ErrEmptyPropertyID
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, defaultTimeout)
+	defer cancel()
+
+	// Ensure the property exists before deleting
+	docRef, err := r.client.Collection(propertyCollection).Doc(id).Get(ctx)
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
+			return nil // Already deleted, return nil
+		}
+		return fmt.Errorf("checking property exists: %w", err)
+	}
+
+	_, err = docRef.Ref.Delete(ctx)
+	if err != nil {
+		return fmt.Errorf("deleting property: %w", err)
+	}
+
+	return nil
 }
