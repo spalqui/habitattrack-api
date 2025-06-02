@@ -1,0 +1,662 @@
+openapi: 3.0.0
+info:
+  title: HabitatTrack API
+  version: 1.0.0
+  description: API for managing properties and financial transactions.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+components:
+  schemas:
+    Property:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        address:
+          type: string
+        property_type:
+          type: string
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        area_sqft:
+          type: number
+          format: float
+        purchase_price:
+          type: number
+          format: float
+        purchase_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    IncomeType:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Name of the income type (e.g., Rent Received, Dividends)
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    ExpenseType:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          description: Name of the expense type (e.g., Insurance, Estate Agent Fees, Maintenance)
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    Transaction:
+      type: object
+      required:
+        - transaction_date
+        - amount
+        - type # 'income' or 'expense'
+        - description
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        property_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Optional ID of the property this transaction is linked to.
+        transaction_date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+          description: Positive value for both income and expense.
+        type:
+          type: string
+          enum: [income, expense]
+          description: Type of transaction.
+        income_type_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the income type (required if type is 'income').
+        expense_type_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the expense type (required if type is 'expense').
+        description:
+          type: string
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+  parameters:
+    TransactionID:
+      name: transactionId
+      in: path
+      required: true
+      description: ID of the transaction
+      schema:
+        type: string
+        format: uuid
+    IncomeTypeID:
+      name: incomeTypeId
+      in: path
+      required: true
+      description: ID of the income type
+      schema:
+        type: string
+        format: uuid
+    ExpenseTypeID:
+      name: expenseTypeId
+      in: path
+      required: true
+      description: ID of the expense type
+      schema:
+        type: string
+        format: uuid
+
+  requestBodies:
+    IncomeTypeRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+                nullable: true
+    ExpenseTypeRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+                nullable: true
+    TransactionRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - transaction_date
+              - amount
+              - type
+              - description
+            properties:
+              property_id:
+                type: string
+                format: uuid
+                nullable: true
+              transaction_date:
+                type: string
+                format: date
+              amount:
+                type: number
+                format: float
+              type:
+                type: string
+                enum: [income, expense]
+              income_type_id:
+                type: string
+                format: uuid
+                nullable: true
+              expense_type_id:
+                type: string
+                format: uuid
+                nullable: true
+              description:
+                type: string
+              notes:
+                type: string
+                nullable: true
+
+paths:
+  /income-types:
+    get:
+      summary: List all income types
+      tags: [IncomeTypes]
+      responses:
+        '200':
+          description: A list of income types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IncomeType'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new income type
+      tags: [IncomeTypes]
+      requestBody:
+        $ref: '#/components/requestBodies/IncomeTypeRequest'
+      responses:
+        '201':
+          description: Income type created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeType'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /income-types/{incomeTypeId}:
+    get:
+      summary: Get an income type by ID
+      tags: [IncomeTypes]
+      parameters:
+        - $ref: '#/components/parameters/IncomeTypeID'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeType'
+        '404':
+          description: Income type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update an income type
+      tags: [IncomeTypes]
+      parameters:
+        - $ref: '#/components/parameters/IncomeTypeID'
+      requestBody:
+        $ref: '#/components/requestBodies/IncomeTypeRequest'
+      responses:
+        '200':
+          description: Income type updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeType'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Income type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an income type
+      tags: [IncomeTypes]
+      parameters:
+        - $ref: '#/components/parameters/IncomeTypeID'
+      responses:
+        '204':
+          description: Income type deleted successfully
+        '404':
+          description: Income type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /expense-types:
+    get:
+      summary: List all expense types
+      tags: [ExpenseTypes]
+      responses:
+        '200':
+          description: A list of expense types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseType'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new expense type
+      tags: [ExpenseTypes]
+      requestBody:
+        $ref: '#/components/requestBodies/ExpenseTypeRequest'
+      responses:
+        '201':
+          description: Expense type created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseType'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /expense-types/{expenseTypeId}:
+    get:
+      summary: Get an expense type by ID
+      tags: [ExpenseTypes]
+      parameters:
+        - $ref: '#/components/parameters/ExpenseTypeID'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseType'
+        '404':
+          description: Expense type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update an expense type
+      tags: [ExpenseTypes]
+      parameters:
+        - $ref: '#/components/parameters/ExpenseTypeID'
+      requestBody:
+        $ref: '#/components/requestBodies/ExpenseTypeRequest'
+      responses:
+        '200':
+          description: Expense type updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseType'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Expense type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an expense type
+      tags: [ExpenseTypes]
+      parameters:
+        - $ref: '#/components/parameters/ExpenseTypeID'
+      responses:
+        '204':
+          description: Expense type deleted successfully
+        '404':
+          description: Expense type not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions:
+    get:
+      summary: List all transactions
+      tags: [Transactions]
+      parameters:
+        - name: property_id
+          in: query
+          required: false
+          description: Filter transactions by property ID
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: false
+          description: Filter transactions by type (income or expense)
+          schema:
+            type: string
+            enum: [income, expense]
+        - name: start_date
+          in: query
+          required: false
+          description: Filter transactions from this date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          required: false
+          description: Filter transactions up to this date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: A list of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new transaction
+      tags: [Transactions]
+      requestBody:
+        $ref: '#/components/requestBodies/TransactionRequest'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid input (e.g., missing income_type_id for income, or expense_type_id for expense)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /transactions/{transactionId}:
+    get:
+      summary: Get a transaction by ID
+      tags: [Transactions]
+      parameters:
+        - $ref: '#/components/parameters/TransactionID'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update a transaction
+      tags: [Transactions]
+      parameters:
+        - $ref: '#/components/parameters/TransactionID'
+      requestBody:
+        $ref: '#/components/requestBodies/TransactionRequest'
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a transaction
+      tags: [Transactions]
+      parameters:
+        - $ref: '#/components/parameters/TransactionID'
+      responses:
+        '204':
+          description: Transaction deleted successfully
+        '404':
+          description: Transaction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+tags:
+  - name: IncomeTypes
+    description: Operations related to income types
+  - name: ExpenseTypes
+    description: Operations related to expense types
+  - name: Transactions
+    description: Operations related to financial transactions
+  - name: Properties
+    description: Operations related to properties (existing, for context)
+
+# Placeholder for existing Property paths if you want to merge them here
+# paths:
+#   /properties:
+#     ...
+#   /properties/{propertyId}:
+#     ...
