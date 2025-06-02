@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/spalqui/habitattrack-api/config"
-	"github.com/spalqui/habitattrack-api/handlers"
-	"github.com/spalqui/habitattrack-api/repositories"
-	"github.com/spalqui/habitattrack-api/services"
+	"github.com/spalqui/habitattrack-api/internal/features/categories"
+	"github.com/spalqui/habitattrack-api/internal/features/properties"
+	"github.com/spalqui/habitattrack-api/internal/features/transactions"
 )
 
 func main() {
@@ -33,27 +33,43 @@ func main() {
 
 	r := gin.Default()
 
-	propertyRepo, err := repositories.NewFirestorePropertyRepository(context.Background(), c.ProjectID, c.DatabaseID)
+	propertyRepo, err := properties.NewFirestorePropertyRepository(context.Background(), c.ProjectID, c.DatabaseID)
 	if err != nil {
+		logger.Error("error creating firestore property repository", slog.Any("error", err))
 		log.Fatalf("error creating firestore property repository: %v", err)
 	}
+	// defer propertyRepo.CloseClient() // Consider client close on shutdown
 
-	propertyService := services.NewPropertyService(propertyRepo)
-
-	healthHandler := handlers.NewHealthHandler(logger)
-	propertyHandler := handlers.NewPropertyHandler(logger, propertyService)
-
-	propertyRouter := r.Group("/property")
-	{
-		propertyRouter.GET("/:id", propertyHandler.GetByID)
-		propertyRouter.GET("/", propertyHandler.List)
-		propertyRouter.POST("/", propertyHandler.Create)
-		propertyRouter.PATCH("/:id", propertyHandler.Update)
-		propertyRouter.DELETE("/:id", propertyHandler.Delete)
+	transactionRepo, err := transactions.NewFirestoreTransactionRepository(context.Background(), c.ProjectID, c.DatabaseID)
+	if err != nil {
+		logger.Error("error creating firestore transaction repository", slog.Any("error", err))
+		log.Fatalf("error creating firestore transaction repository: %v", err)
 	}
+	// defer transactionRepo.CloseClient()
 
-	r.GET("/health", healthHandler.Check)
+	categoryRepo, err := categories.NewFirestoreCategoryRepository(context.Background(), c.ProjectID, c.DatabaseID)
+	if err != nil {
+		logger.Error("error creating firestore category repository", slog.Any("error", err))
+		log.Fatalf("error creating firestore category repository: %v", err)
+	}
+	// defer categoryRepo.CloseClient()
 
+	// Feature-sliced services and handlers
+	propertyService := properties.NewPropertyService(propertyRepo)
+	propertyHandler := properties.NewPropertyHandler(propertyService)
+
+	transactionsService := transactions.NewTransactionService(transactionRepo, categoryRepo)
+	transactionsHandler := transactions.NewTransactionHandler(transactionsService)
+
+	categoriesService := categories.NewCategoryService(categoryRepo)
+	categoriesHandler := categories.NewCategoryHandler(categoriesService)
+
+	// Register feature routes
+	propertyHandler.RegisterRoutes(r)
+	transactionsHandler.RegisterRoutes(r)
+	categoriesHandler.RegisterRoutes(r)
+
+	logger.Info("Server starting", slog.Int("port", c.Port))
 	err = r.Run(fmt.Sprintf(":%d", c.Port))
 	if err != nil {
 		log.Fatalf("failed to run: %v", err)
