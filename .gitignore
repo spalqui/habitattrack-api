@@ -1,2 +1,23 @@
+# IDE
 .idea
+.vscode/settings.json
+
+# Python
 __pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.venv
+pip-log.txt
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Google Cloud credentials (if using service account files)
+service-account-key.json
+*.json

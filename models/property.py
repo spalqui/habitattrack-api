@@ -10,8 +10,9 @@ class PropertyBase(BaseModel):
     city_or_town: str = Field(..., min_length=1, max_length=100, description="City or town of the property's address")
     description: str | None = Field(None, max_length=1000, description="Optional descriptive text about the property")
 
+    @classmethod
     @field_validator("first_line_address", "city_or_town")
-    def validate_required_strings(self, v):
+    def validate_required_strings(cls, v):
         """Ensure required string fields are not empty after stripping whitespace."""
         if v is not None:
             v = v.strip()
@@ -19,8 +20,9 @@ class PropertyBase(BaseModel):
                 raise ValueError("Field cannot be empty")
         return v
 
+    @classmethod
     @field_validator("second_line_address", "description")
-    def validate_optional_strings(self, v):
+    def validate_optional_strings(cls, v):
         """Strip whitespace from optional string fields."""
         if v is not None:
             v = v.strip()
@@ -40,8 +42,9 @@ class PropertyUpdate(BaseModel):
     city_or_town: str | None = Field(None, min_length=1, max_length=100, description="City or town of the property's address")
     description: str | None = Field(None, max_length=1000, description="Optional descriptive text about the property")
 
+    @classmethod
     @field_validator("first_line_address", "city_or_town")
-    def validate_non_empty_required_strings(self, v: str) -> str:
+    def validate_non_empty_required_strings(cls, v: str) -> str:
         """Ensure required string fields are not empty after stripping whitespace."""
         if v is not None:
             v = v.strip()
@@ -49,8 +52,9 @@ class PropertyUpdate(BaseModel):
                 raise ValueError(f"Field cannot be empty")
         return v
 
+    @classmethod
     @field_validator("second_line_address", "description")
-    def validate_non_empty_optional_strings(self, v: str) -> str | None:
+    def validate_non_empty_optional_strings(cls, v: str) -> str | None:
         """Strip whitespace from optional string fields."""
         if v is not None:
             v = v.strip()
@@ -68,7 +72,7 @@ class Property(PropertyBase):
         json_encoders = {
             datetime: lambda dt: dt.isoformat()
         }
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": "guid",
                 "first_line_address": "123 Main Street",
