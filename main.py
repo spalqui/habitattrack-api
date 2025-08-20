@@ -12,23 +12,17 @@ from services.transaction_service import transaction_service
 
 app = FastAPI(
     title="HabitatTrack API",
-    description="HabitatTrack API",
-    version="0.1.0"
+    description="HabitatTrack API runs the backend for the HabitatTrack application, providing endpoints to manage properties, transaction categories, and transactions.",
+    version="1.0.0"
 )
-
-
-@app.get("/")
-async def root():
-    """Root endpoint returning welcome message."""
-    return {"message": "Welcome to the HabitatTrack API"}
-
 
 @app.post(
     "/properties",
     response_model=Property,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new property",
-    description="Create a new property with the provided details. ID and timestamps are auto-generated."
+    description="Create a new property with the provided details. ID and timestamps are auto-generated.",
+    tags=["Properties"]
 )
 async def create_property(property_data: PropertyCreate) -> Property:
     """
@@ -65,7 +59,8 @@ async def create_property(property_data: PropertyCreate) -> Property:
     response_model=List[Property],
     status_code=status.HTTP_200_OK,
     summary="Get all properties",
-    description="Retrieve a list of all properties with optional pagination parameters."
+    description="Retrieve a list of all properties with optional pagination parameters.",
+    tags=["Properties"]
 )
 async def get_properties(
     limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of properties to return"),
@@ -100,7 +95,8 @@ async def get_properties(
     response_model=Property,
     status_code=status.HTTP_200_OK,
     summary="Get a property by ID",
-    description="Retrieve a specific property by its unique identifier."
+    description="Retrieve a specific property by its unique identifier.",
+    tags=["Properties"]
 )
 async def get_property(property_id: str) -> Property:
     """
@@ -140,7 +136,8 @@ async def get_property(property_id: str) -> Property:
     response_model=Property,
     status_code=status.HTTP_200_OK,
     summary="Update a property",
-    description="Update an existing property with the provided details."
+    description="Update an existing property with the provided details.",
+    tags=["Properties"]
 )
 async def update_property(property_id: str, property_data: PropertyUpdate) -> Property:
     """
@@ -186,7 +183,8 @@ async def update_property(property_id: str, property_data: PropertyUpdate) -> Pr
     "/properties/{property_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a property",
-    description="Delete a property by its unique identifier."
+    description="Delete a property by its unique identifier.",
+    tags=["Properties"]
 )
 async def delete_property(property_id: str):
     """
@@ -225,7 +223,8 @@ async def delete_property(property_id: str):
     response_model=TransactionCategory,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new transaction category",
-    description="Create a new transaction category with the provided details. ID and timestamps are auto-generated."
+    description="Create a new transaction category with the provided details. ID and timestamps are auto-generated.",
+    tags=["Transaction Categories"]
 )
 async def create_transaction_category(category_data: TransactionCategoryCreate) -> TransactionCategory:
     """
@@ -269,7 +268,8 @@ async def create_transaction_category(category_data: TransactionCategoryCreate) 
     response_model=List[TransactionCategory],
     status_code=status.HTTP_200_OK,
     summary="Get all transaction categories",
-    description="Retrieve a list of all transaction categories."
+    description="Retrieve a list of all transaction categories.",
+    tags=["Transaction Categories"]
 )
 async def get_transaction_categories() -> List[TransactionCategory]:
     """
@@ -297,7 +297,8 @@ async def get_transaction_categories() -> List[TransactionCategory]:
     response_model=TransactionCategory,
     status_code=status.HTTP_200_OK,
     summary="Get a transaction category by ID",
-    description="Retrieve a specific transaction category by its unique identifier."
+    description="Retrieve a specific transaction category by its unique identifier.",
+    tags=["Transaction Categories"]
 )
 async def get_transaction_category(category_id: str) -> TransactionCategory:
     """
@@ -337,7 +338,8 @@ async def get_transaction_category(category_id: str) -> TransactionCategory:
     response_model=TransactionCategory,
     status_code=status.HTTP_200_OK,
     summary="Update a transaction category",
-    description="Update an existing transaction category with the provided details."
+    description="Update an existing transaction category with the provided details.",
+    tags=["Transaction Categories"]
 )
 async def update_transaction_category(category_id: str, category_data: TransactionCategoryUpdate) -> TransactionCategory:
     """
@@ -390,7 +392,8 @@ async def update_transaction_category(category_id: str, category_data: Transacti
     "/transaction_categories/{category_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a transaction category",
-    description="Delete a transaction category by its unique identifier."
+    description="Delete a transaction category by its unique identifier.",
+    tags=["Transaction Categories"]
 )
 async def delete_transaction_category(category_id: str):
     """
@@ -441,7 +444,8 @@ async def delete_transaction_category(category_id: str):
     response_model=Transaction,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new transaction",
-    description="Create a new transaction with the provided details. ID and date_created are auto-generated."
+    description="Create a new transaction with the provided details. ID and date_created are auto-generated.",
+    tags=["Transactions"]
 )
 async def create_transaction(transaction_data: TransactionCreate) -> Transaction:
     """
@@ -478,7 +482,8 @@ async def create_transaction(transaction_data: TransactionCreate) -> Transaction
     response_model=List[Transaction],
     status_code=status.HTTP_200_OK,
     summary="Get all transactions",
-    description="Retrieve a list of all transactions with optional filtering and pagination parameters."
+    description="Retrieve a list of all transactions with optional filtering and pagination parameters.",
+    tags=["Transactions"]
 )
 async def get_transactions(
     property_id: Optional[str] = Query(None, description="Filter transactions by property ID"),
@@ -525,7 +530,8 @@ async def get_transactions(
     response_model=Transaction,
     status_code=status.HTTP_200_OK,
     summary="Get a transaction by ID",
-    description="Retrieve a specific transaction by its unique identifier."
+    description="Retrieve a specific transaction by its unique identifier.",
+    tags=["Transactions"]
 )
 async def get_transaction(transaction_id: str) -> Transaction:
     """
@@ -565,7 +571,8 @@ async def get_transaction(transaction_id: str) -> Transaction:
     response_model=Transaction,
     status_code=status.HTTP_200_OK,
     summary="Update a transaction",
-    description="Update an existing transaction with the provided details."
+    description="Update an existing transaction with the provided details.",
+    tags=["Transactions"]
 )
 async def update_transaction(transaction_id: str, transaction_data: TransactionUpdate) -> Transaction:
     """
@@ -611,7 +618,8 @@ async def update_transaction(transaction_id: str, transaction_data: TransactionU
     "/transactions/{transaction_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a transaction",
-    description="Delete a transaction by its unique identifier."
+    description="Delete a transaction by its unique identifier.",
+    tags=["Transactions"]
 )
 async def delete_transaction(transaction_id: str):
     """
