@@ -3,7 +3,9 @@ from fastapi.responses import JSONResponse
 from typing import List
 
 from models.property import Property, PropertyCreate, PropertyUpdate
+from models.transaction_category import TransactionCategory, TransactionCategoryCreate, TransactionCategoryUpdate
 from services.property_service import property_service
+from services.transaction_category_service import transaction_category_service
 
 app = FastAPI(
     title="HabitatTrack API",
@@ -210,6 +212,222 @@ async def delete_property(property_id: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while deleting the property: {str(e)}"
+        )
+
+
+# Transaction Category Endpoints
+
+@app.post(
+    "/transaction_categories",
+    response_model=TransactionCategory,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new transaction category",
+    description="Create a new transaction category with the provided details. ID and timestamps are auto-generated."
+)
+async def create_transaction_category(category_data: TransactionCategoryCreate) -> TransactionCategory:
+    """
+    Create a new transaction category.
+    
+    Args:
+        category_data: Transaction category details from request body
+        
+    Returns:
+        TransactionCategory: The created transaction category with generated ID and timestamps
+        
+    Raises:
+        HTTPException: 400 Bad Request if validation fails
+        HTTPException: 409 Conflict if category name already exists
+        HTTPException: 500 Internal Server Error if creation fails
+    """
+    try:
+        new_category = transaction_category_service.create_transaction_category(category_data)
+        return new_category
+        
+    except ValueError as e:
+        if "already exists" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid transaction category data: {str(e)}"
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while creating the transaction category: {str(e)}"
+        )
+
+
+@app.get(
+    "/transaction_categories",
+    response_model=List[TransactionCategory],
+    status_code=status.HTTP_200_OK,
+    summary="Get all transaction categories",
+    description="Retrieve a list of all transaction categories."
+)
+async def get_transaction_categories() -> List[TransactionCategory]:
+    """
+    Retrieve all transaction categories.
+    
+    Returns:
+        List[TransactionCategory]: List of transaction categories
+        
+    Raises:
+        HTTPException: 500 Internal Server Error if retrieval fails
+    """
+    try:
+        categories = transaction_category_service.get_all_transaction_categories()
+        return categories
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while retrieving transaction categories: {str(e)}"
+        )
+
+
+@app.get(
+    "/transaction_categories/{category_id}",
+    response_model=TransactionCategory,
+    status_code=status.HTTP_200_OK,
+    summary="Get a transaction category by ID",
+    description="Retrieve a specific transaction category by its unique identifier."
+)
+async def get_transaction_category(category_id: str) -> TransactionCategory:
+    """
+    Retrieve a specific transaction category by ID.
+    
+    Args:
+        category_id: The unique identifier of the transaction category
+        
+    Returns:
+        TransactionCategory: The requested transaction category
+        
+    Raises:
+        HTTPException: 404 Not Found if transaction category doesn't exist
+        HTTPException: 500 Internal Server Error if retrieval fails
+    """
+    try:
+        category = transaction_category_service.get_transaction_category(category_id)
+        if category is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction category with ID '{category_id}' not found"
+            )
+        return category
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while retrieving the transaction category: {str(e)}"
+        )
+
+
+@app.put(
+    "/transaction_categories/{category_id}",
+    response_model=TransactionCategory,
+    status_code=status.HTTP_200_OK,
+    summary="Update a transaction category",
+    description="Update an existing transaction category with the provided details."
+)
+async def update_transaction_category(category_id: str, category_data: TransactionCategoryUpdate) -> TransactionCategory:
+    """
+    Update an existing transaction category.
+    
+    Args:
+        category_id: The unique identifier of the transaction category
+        category_data: Updated transaction category details from request body
+        
+    Returns:
+        TransactionCategory: The updated transaction category
+        
+    Raises:
+        HTTPException: 404 Not Found if transaction category doesn't exist
+        HTTPException: 400 Bad Request if validation fails
+        HTTPException: 409 Conflict if updated name already exists
+        HTTPException: 500 Internal Server Error if update fails
+    """
+    try:
+        updated_category = transaction_category_service.update_transaction_category(category_id, category_data)
+        if updated_category is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction category with ID '{category_id}' not found"
+            )
+        return updated_category
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except ValueError as e:
+        if "already exists" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid transaction category data: {str(e)}"
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while updating the transaction category: {str(e)}"
+        )
+
+
+@app.delete(
+    "/transaction_categories/{category_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a transaction category",
+    description="Delete a transaction category by its unique identifier."
+)
+async def delete_transaction_category(category_id: str):
+    """
+    Delete a transaction category by ID.
+    
+    Args:
+        category_id: The unique identifier of the transaction category
+        
+    Raises:
+        HTTPException: 404 Not Found if transaction category doesn't exist
+        HTTPException: 409 Conflict if category is associated with existing transactions
+        HTTPException: 500 Internal Server Error if deletion fails
+    """
+    try:
+        deleted = transaction_category_service.delete_transaction_category(category_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction category with ID '{category_id}' not found"
+            )
+        # Return 204 No Content (no response body needed)
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except ValueError as e:
+        if "associated with existing transactions" in str(e):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=str(e)
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e)
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the transaction category: {str(e)}"
         )
 
 

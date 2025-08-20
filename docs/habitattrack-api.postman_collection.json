@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "HabitatTrack Property API",
-    "description": "Complete collection of property endpoints for the HabitatTrack API. This collection includes all CRUD operations for property management with sample data and proper error handling.",
+    "name": "HabitatTrack API",
+    "description": "Complete collection for the HabitatTrack API. This collection includes all CRUD operations for property and transaction category management with sample data and proper error handling.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "habitattrack-property-api-collection",
     "version": {
@@ -20,6 +20,11 @@
       "key": "property_id",
       "value": "",
       "description": "Property ID for testing specific property operations"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "description": "Transaction category ID for testing specific category operations"
     }
   ],
   "item": [
@@ -573,6 +578,520 @@
         }
       ],
       "description": "All property-related endpoints including CRUD operations with comprehensive examples and test scenarios."
+    },
+    {
+      "name": "Transaction Categories",
+      "item": [
+        {
+          "name": "Create Transaction Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('category_id', responseJson.id);",
+                  "    pm.test('Transaction category created successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('date_created');",
+                  "        pm.expect(responseJson).to.have.property('date_last_updated');",
+                  "        pm.expect(responseJson.name).to.eql('Rent Income');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rent Income\",\n  \"description\": \"Monthly rental income from properties\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transaction_categories",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories"]
+            },
+            "description": "Create a new transaction category with the provided details. ID and timestamps are auto-generated."
+          },
+          "response": [
+            {
+              "name": "Success - Category Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Rent Income\",\n  \"description\": \"Monthly rental income from properties\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"category-guid-example\",\n  \"name\": \"Rent Income\",\n  \"description\": \"Monthly rental income from properties\",\n  \"date_created\": \"2024-01-15T10:30:00Z\",\n  \"date_last_updated\": \"2024-01-15T10:30:00Z\"\n}"
+            },
+            {
+              "name": "Error - Name Already Exists",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Rent Income\",\n  \"description\": \"Duplicate category name\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with name 'Rent Income' already exists\"\n}"
+            },
+            {
+              "name": "Error - Validation Failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Invalid transaction category data: Field cannot be empty\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Transaction Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transaction_categories",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories"]
+            },
+            "description": "Retrieve a list of all transaction categories."
+          },
+          "response": [
+            {
+              "name": "Success - Categories List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"category-guid-1\",\n    \"name\": \"Rent Income\",\n    \"description\": \"Monthly rental income from properties\",\n    \"date_created\": \"2024-01-15T10:30:00Z\",\n    \"date_last_updated\": \"2024-01-15T10:30:00Z\"\n  },\n  {\n    \"id\": \"category-guid-2\",\n    \"name\": \"Maintenance\",\n    \"description\": \"Property maintenance and repairs\",\n    \"date_created\": \"2024-01-16T14:20:00Z\",\n    \"date_last_updated\": \"2024-01-16T14:20:00Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Transaction Category by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test('Transaction category retrieved successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('name');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transaction_categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories", "{{category_id}}"]
+            },
+            "description": "Retrieve a specific transaction category by its unique identifier. Uses the category_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Category Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"category-guid-example\",\n  \"name\": \"Rent Income\",\n  \"description\": \"Monthly rental income from properties\",\n  \"date_created\": \"2024-01-15T10:30:00Z\",\n  \"date_last_updated\": \"2024-01-15T10:30:00Z\"\n}"
+            },
+            {
+              "name": "Error - Category Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-id' not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Transaction Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test('Transaction category updated successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('date_last_updated');",
+                  "        pm.expect(responseJson.description).to.eql('Updated: Monthly rental income and deposits');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rent Income\",\n  \"description\": \"Updated: Monthly rental income and deposits\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transaction_categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories", "{{category_id}}"]
+            },
+            "description": "Update an existing transaction category with the provided details. Uses the category_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Category Updated",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Rent Income\",\n  \"description\": \"Updated: Monthly rental income and deposits\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"category-guid-example\",\n  \"name\": \"Rent Income\",\n  \"description\": \"Updated: Monthly rental income and deposits\",\n  \"date_created\": \"2024-01-15T10:30:00Z\",\n  \"date_last_updated\": \"2024-01-20T14:45:00Z\"\n}"
+            },
+            {
+              "name": "Error - Category Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Updated description\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-id' not found\"\n}"
+            },
+            {
+              "name": "Error - Name Already Exists",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Maintenance\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with name 'Maintenance' already exists\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Partial Update Transaction Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description only - name remains unchanged\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transaction_categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories", "{{category_id}}"]
+            },
+            "description": "Example of partial update - only updating the description field while leaving the name unchanged."
+          }
+        },
+        {
+          "name": "Delete Transaction Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Transaction category deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transaction_categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories", "{{category_id}}"]
+            },
+            "description": "Delete a transaction category by its unique identifier. Uses the category_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Category Deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": null,
+              "header": [],
+              "cookie": [],
+              "body": null
+            },
+            {
+              "name": "Error - Category Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-id' not found\"\n}"
+            },
+            {
+              "name": "Error - Category In Use",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Cannot delete category: it is associated with existing transactions\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "All transaction category-related endpoints including CRUD operations with comprehensive examples and test scenarios."
     }
   ],
   "auth": {
