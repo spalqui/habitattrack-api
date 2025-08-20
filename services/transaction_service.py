@@ -6,12 +6,11 @@ using Google Cloud Firestore as the database.
 """
 
 from datetime import datetime, timezone
-from typing import Optional, List
 
 from models.transaction import Transaction, TransactionCreate, TransactionUpdate
 from services.firestore_client import firestore_client
-from services.transaction_category_service import transaction_category_service
 from services.property_service import property_service
+from services.transaction_category_service import transaction_category_service
 
 
 class TransactionService:
@@ -79,7 +78,7 @@ class TransactionService:
         
         return new_transaction
 
-    def get_transaction(self, transaction_id: str) -> Optional[Transaction]:
+    def get_transaction(self, transaction_id: str) -> Transaction | None:
         """
         Retrieve a transaction by ID.
         
@@ -108,12 +107,12 @@ class TransactionService:
 
     def get_all_transactions(
         self, 
-        property_id: Optional[str] = None,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        property_id: str | None = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
         limit: int = 100, 
         offset: int = 0
-    ) -> List[Transaction]:
+    ) -> list[Transaction]:
         """
         Retrieve all transactions with filtering and pagination support.
         
@@ -161,7 +160,7 @@ class TransactionService:
             print(f"Error retrieving transactions: {e}")
             return []
 
-    def update_transaction(self, transaction_id: str, transaction_data: TransactionUpdate) -> Optional[Transaction]:
+    def update_transaction(self, transaction_id: str, transaction_data: TransactionUpdate) -> Transaction | None:
         """
         Update an existing transaction.
         

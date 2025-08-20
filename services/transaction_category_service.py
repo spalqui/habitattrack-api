@@ -6,9 +6,12 @@ using Google Cloud Firestore as the database.
 """
 
 from datetime import datetime, timezone
-from typing import Optional
 
-from models.transaction_category import TransactionCategory, TransactionCategoryCreate, TransactionCategoryUpdate
+from models.transaction_category import (
+    TransactionCategory,
+    TransactionCategoryCreate,
+    TransactionCategoryUpdate,
+)
 from services.firestore_client import firestore_client
 
 
@@ -66,7 +69,7 @@ class TransactionCategoryService:
         
         return new_category
 
-    def get_transaction_category(self, category_id: str) -> Optional[TransactionCategory]:
+    def get_transaction_category(self, category_id: str) -> TransactionCategory | None:
         """
         Retrieve a transaction category by ID.
         
@@ -117,7 +120,7 @@ class TransactionCategoryService:
             print(f"Error retrieving all transaction categories: {e}")
             return []
 
-    def update_transaction_category(self, category_id: str, category_data: TransactionCategoryUpdate) -> Optional[TransactionCategory]:
+    def update_transaction_category(self, category_id: str, category_data: TransactionCategoryUpdate) -> TransactionCategory | None:
         """
         Update an existing transaction category.
         
@@ -203,7 +206,7 @@ class TransactionCategoryService:
             print(f"Error deleting transaction category {category_id}: {e}")
             return False
 
-    def _get_category_by_name(self, name: str) -> Optional[TransactionCategory]:
+    def _get_category_by_name(self, name: str) -> TransactionCategory | None:
         """
         Helper method to get a transaction category by name.
         

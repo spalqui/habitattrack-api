@@ -6,7 +6,6 @@ using Google Cloud Firestore as the database.
 """
 
 from datetime import datetime, timezone
-from typing import Optional
 
 from models.property import Property, PropertyCreate, PropertyUpdate
 from services.firestore_client import firestore_client
@@ -61,7 +60,7 @@ class PropertyService:
         
         return new_property
 
-    def get_property(self, property_id: str) -> Optional[Property]:
+    def get_property(self, property_id: str) -> Property | None:
         """
         Retrieve a property by ID.
         
@@ -116,7 +115,7 @@ class PropertyService:
             print(f"Error retrieving all properties: {e}")
             return []
 
-    def update_property(self, property_id: str, property_data: PropertyUpdate) -> Optional[Property]:
+    def update_property(self, property_id: str, property_data: PropertyUpdate) -> Property | None:
         """
         Update an existing property.
         

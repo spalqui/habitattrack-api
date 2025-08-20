@@ -6,8 +6,9 @@ Following the singleton pattern to avoid creating multiple connections.
 """
 
 import os
-from google.cloud import firestore
+
 from dotenv import load_dotenv
+from google.cloud import firestore
 
 # Load environment variables
 load_dotenv()
