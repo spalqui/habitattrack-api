@@ -10,6 +10,8 @@ from typing import Optional, List
 
 from models.transaction import Transaction, TransactionCreate, TransactionUpdate
 from services.firestore_client import firestore_client
+from services.transaction_category_service import transaction_category_service
+from services.property_service import property_service
 
 
 class TransactionService:
@@ -38,8 +40,19 @@ class TransactionService:
             Transaction: The created transaction with generated id and timestamp
             
         Raises:
-            ValueError: If transaction data is invalid
+            ValueError: If transaction data is invalid, transaction category doesn't exist, or property doesn't exist
         """
+        # Validate transaction category exists
+        category = transaction_category_service.get_transaction_category(transaction_data.transaction_category_id)
+        if category is None:
+            raise ValueError(f"Transaction category with ID '{transaction_data.transaction_category_id}' does not exist")
+        
+        # Validate property exists if property_id is provided
+        if transaction_data.property_id is not None:
+            property_obj = property_service.get_property(transaction_data.property_id)
+            if property_obj is None:
+                raise ValueError(f"Property with ID '{transaction_data.property_id}' does not exist")
+        
         # Get current timestamp
         now = datetime.now(timezone.utc)
         
@@ -160,7 +173,7 @@ class TransactionService:
             Updated Transaction or None if not found
             
         Raises:
-            ValueError: If transaction data is invalid
+            ValueError: If transaction data is invalid, transaction category doesn't exist, or property doesn't exist
         """
         try:
             # Check if transaction exists
@@ -169,6 +182,18 @@ class TransactionService:
             
             if not doc.exists:
                 return None
+            
+            # Validate transaction category exists if being updated
+            if transaction_data.transaction_category_id is not None:
+                category = transaction_category_service.get_transaction_category(transaction_data.transaction_category_id)
+                if category is None:
+                    raise ValueError(f"Transaction category with ID '{transaction_data.transaction_category_id}' does not exist")
+            
+            # Validate property exists if property_id is being updated and is not None
+            if transaction_data.property_id is not None:
+                property_obj = property_service.get_property(transaction_data.property_id)
+                if property_obj is None:
+                    raise ValueError(f"Property with ID '{transaction_data.property_id}' does not exist")
             
             # Prepare update data (exclude None values)
             update_dict = {k: v for k, v in transaction_data.model_dump().items() if v is not None}

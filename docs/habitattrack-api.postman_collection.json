@@ -34,50 +34,6 @@
   ],
   "item": [
     {
-      "name": "Root",
-      "item": [
-        {
-          "name": "Get API Welcome Message",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/",
-              "host": ["{{base_url}}"],
-              "path": [""]
-            },
-            "description": "Root endpoint that returns a welcome message from the HabitatTrack API."
-          },
-          "response": [
-            {
-              "name": "Success Response",
-              "originalRequest": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/",
-                  "host": ["{{base_url}}"],
-                  "path": [""]
-                }
-              },
-              "status": "OK",
-              "code": 200,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"message\": \"Welcome to the HabitatTrack API\"\n}"
-            }
-          ]
-        }
-      ],
-      "description": "Root endpoint for API health check and welcome message."
-    },
-    {
       "name": "Properties",
       "item": [
         {
@@ -511,75 +467,6 @@
             },
             "description": "Example of partial update - only updating the description field while leaving other fields unchanged."
           }
-        },
-        {
-          "name": "Delete Property",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Property deleted successfully', function () {",
-                  "    pm.expect(pm.response.code).to.eql(204);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/properties/{{property_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["properties", "{{property_id}}"]
-            },
-            "description": "Delete a property by its unique identifier. Uses the property_id collection variable."
-          },
-          "response": [
-            {
-              "name": "Success - Property Deleted",
-              "originalRequest": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/properties/guid-example",
-                  "host": ["{{base_url}}"],
-                  "path": ["properties", "guid-example"]
-                }
-              },
-              "status": "No Content",
-              "code": 204,
-              "_postman_previewlanguage": null,
-              "header": [],
-              "cookie": [],
-              "body": null
-            },
-            {
-              "name": "Error - Property Not Found",
-              "originalRequest": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/properties/non-existent-id",
-                  "host": ["{{base_url}}"],
-                  "path": ["properties", "non-existent-id"]
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"detail\": \"Property with ID 'non-existent-id' not found\"\n}"
-            }
-          ]
         }
       ],
       "description": "All property-related endpoints including CRUD operations with comprehensive examples and test scenarios."
@@ -1002,98 +889,6 @@
             },
             "description": "Example of partial update - only updating the description field while leaving the name unchanged."
           }
-        },
-        {
-          "name": "Delete Transaction Category",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Transaction category deleted successfully', function () {",
-                  "    pm.expect(pm.response.code).to.eql(204);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/transaction_categories/{{category_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["transaction_categories", "{{category_id}}"]
-            },
-            "description": "Delete a transaction category by its unique identifier. Uses the category_id collection variable."
-          },
-          "response": [
-            {
-              "name": "Success - Category Deleted",
-              "originalRequest": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
-                  "host": ["{{base_url}}"],
-                  "path": ["transaction_categories", "category-guid-example"]
-                }
-              },
-              "status": "No Content",
-              "code": 204,
-              "_postman_previewlanguage": null,
-              "header": [],
-              "cookie": [],
-              "body": null
-            },
-            {
-              "name": "Error - Category Not Found",
-              "originalRequest": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/transaction_categories/non-existent-id",
-                  "host": ["{{base_url}}"],
-                  "path": ["transaction_categories", "non-existent-id"]
-                }
-              },
-              "status": "Not Found",
-              "code": 404,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-id' not found\"\n}"
-            },
-            {
-              "name": "Error - Category In Use",
-              "originalRequest": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
-                  "host": ["{{base_url}}"],
-                  "path": ["transaction_categories", "category-guid-example"]
-                }
-              },
-              "status": "Conflict",
-              "code": 409,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                }
-              ],
-              "cookie": [],
-              "body": "{\n  \"detail\": \"Cannot delete category: it is associated with existing transactions\"\n}"
-            }
-          ]
         }
       ],
       "description": "All transaction category-related endpoints including CRUD operations with comprehensive examples and test scenarios."
@@ -1206,6 +1001,70 @@
               ],
               "cookie": [],
               "body": "{\n  \"detail\": \"Invalid transaction data: Amount must be positive\"\n}"
+            },
+            {
+              "name": "Error - Transaction Category Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"non-existent-category-id\",\n  \"amount\": 1200.00,\n  \"description\": \"Monthly rent payment from tenant\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"property-guid-example\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-category-id' does not exist\"\n}"
+            },
+            {
+              "name": "Error - Property Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"category-guid-example\",\n  \"amount\": 1200.00,\n  \"description\": \"Monthly rent payment from tenant\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"non-existent-property-id\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Property with ID 'non-existent-property-id' does not exist\"\n}"
             }
           ]
         },
@@ -1540,6 +1399,70 @@
               ],
               "cookie": [],
               "body": "{\n  \"detail\": \"Invalid transaction data: Amount must be positive\"\n}"
+            },
+            {
+              "name": "Error - Transaction Category Not Found (Update)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transaction_category_id\": \"non-existent-category-id\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions/transaction-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "transaction-guid-example"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-category-id' does not exist\"\n}"
+            },
+            {
+              "name": "Error - Property Not Found (Update)",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"property_id\": \"non-existent-property-id\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions/transaction-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "transaction-guid-example"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Property with ID 'non-existent-property-id' does not exist\"\n}"
             }
           ]
         },
@@ -1564,7 +1487,13 @@
             },
             "description": "Example of partial update - only updating the description field while leaving other fields unchanged."
           }
-        },
+        }
+      ],
+      "description": "All transaction-related endpoints including CRUD operations with comprehensive examples and test scenarios."
+    },
+    {
+      "name": "5. Cleanup - Delete Operations",
+      "item": [
         {
           "name": "Delete Transaction",
           "event": [
@@ -1633,9 +1562,170 @@
               "body": "{\n  \"detail\": \"Transaction with ID 'non-existent-id' not found\"\n}"
             }
           ]
+        },
+        {
+          "name": "Delete Transaction Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Transaction category deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transaction_categories/{{category_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transaction_categories", "{{category_id}}"]
+            },
+            "description": "Delete a transaction category by its unique identifier. Uses the category_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Category Deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": null,
+              "header": [],
+              "cookie": [],
+              "body": null
+            },
+            {
+              "name": "Error - Category Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction category with ID 'non-existent-id' not found\"\n}"
+            },
+            {
+              "name": "Error - Category In Use",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transaction_categories/category-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transaction_categories", "category-guid-example"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Cannot delete category: it is associated with existing transactions\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Property deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/properties/{{property_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["properties", "{{property_id}}"]
+            },
+            "description": "Delete a property by its unique identifier. Uses the property_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Property Deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/properties/guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["properties", "guid-example"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": null,
+              "header": [],
+              "cookie": [],
+              "body": null
+            },
+            {
+              "name": "Error - Property Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/properties/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["properties", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Property with ID 'non-existent-id' not found\"\n}"
+            }
+          ]
         }
       ],
-      "description": "All transaction-related endpoints including CRUD operations with comprehensive examples and test scenarios."
+      "description": "Cleanup section containing all delete operations. Run these last to avoid dependency issues with creation tests."
     }
   ],
   "auth": {
