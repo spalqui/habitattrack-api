@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.responses import JSONResponse
-from typing import List
+from typing import List, Optional
+from datetime import datetime
 
 from models.property import Property, PropertyCreate, PropertyUpdate
 from models.transaction_category import TransactionCategory, TransactionCategoryCreate, TransactionCategoryUpdate
+from models.transaction import Transaction, TransactionCreate, TransactionUpdate
 from services.property_service import property_service
 from services.transaction_category_service import transaction_category_service
+from services.transaction_service import transaction_service
 
 app = FastAPI(
     title="HabitatTrack API",
@@ -429,6 +432,216 @@ async def delete_transaction_category(category_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred while deleting the transaction category: {str(e)}"
         )
+
+
+# Transaction Endpoints
+
+@app.post(
+    "/transactions",
+    response_model=Transaction,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new transaction",
+    description="Create a new transaction with the provided details. ID and date_created are auto-generated."
+)
+async def create_transaction(transaction_data: TransactionCreate) -> Transaction:
+    """
+    Create a new transaction.
+    
+    Args:
+        transaction_data: Transaction details from request body
+        
+    Returns:
+        Transaction: The created transaction with generated ID and timestamp
+        
+    Raises:
+        HTTPException: 400 Bad Request if validation fails
+        HTTPException: 500 Internal Server Error if creation fails
+    """
+    try:
+        new_transaction = transaction_service.create_transaction(transaction_data)
+        return new_transaction
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid transaction data: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while creating the transaction: {str(e)}"
+        )
+
+
+@app.get(
+    "/transactions",
+    response_model=List[Transaction],
+    status_code=status.HTTP_200_OK,
+    summary="Get all transactions",
+    description="Retrieve a list of all transactions with optional filtering and pagination parameters."
+)
+async def get_transactions(
+    property_id: Optional[str] = Query(None, description="Filter transactions by property ID"),
+    start_date: Optional[datetime] = Query(None, description="Filter transactions from this date onwards"),
+    end_date: Optional[datetime] = Query(None, description="Filter transactions up to this date"),
+    limit: int = Query(default=100, ge=1, le=1000, description="Maximum number of transactions to return"),
+    offset: int = Query(default=0, ge=0, description="Number of transactions to skip")
+) -> List[Transaction]:
+    """
+    Retrieve all transactions with filtering and pagination.
+    
+    Args:
+        property_id: Optional filter by property ID
+        start_date: Optional filter transactions from this date onwards
+        end_date: Optional filter transactions up to this date
+        limit: Maximum number of transactions to return (1-1000, default: 100)
+        offset: Number of transactions to skip (default: 0)
+        
+    Returns:
+        List[Transaction]: List of transactions
+        
+    Raises:
+        HTTPException: 500 Internal Server Error if retrieval fails
+    """
+    try:
+        transactions = transaction_service.get_all_transactions(
+            property_id=property_id,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset
+        )
+        return transactions
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while retrieving transactions: {str(e)}"
+        )
+
+
+@app.get(
+    "/transactions/{transaction_id}",
+    response_model=Transaction,
+    status_code=status.HTTP_200_OK,
+    summary="Get a transaction by ID",
+    description="Retrieve a specific transaction by its unique identifier."
+)
+async def get_transaction(transaction_id: str) -> Transaction:
+    """
+    Retrieve a specific transaction by ID.
+    
+    Args:
+        transaction_id: The unique identifier of the transaction
+        
+    Returns:
+        Transaction: The requested transaction
+        
+    Raises:
+        HTTPException: 404 Not Found if transaction doesn't exist
+        HTTPException: 500 Internal Server Error if retrieval fails
+    """
+    try:
+        transaction = transaction_service.get_transaction(transaction_id)
+        if transaction is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction with ID '{transaction_id}' not found"
+            )
+        return transaction
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while retrieving the transaction: {str(e)}"
+        )
+
+
+@app.put(
+    "/transactions/{transaction_id}",
+    response_model=Transaction,
+    status_code=status.HTTP_200_OK,
+    summary="Update a transaction",
+    description="Update an existing transaction with the provided details."
+)
+async def update_transaction(transaction_id: str, transaction_data: TransactionUpdate) -> Transaction:
+    """
+    Update an existing transaction.
+    
+    Args:
+        transaction_id: The unique identifier of the transaction
+        transaction_data: Updated transaction details from request body
+        
+    Returns:
+        Transaction: The updated transaction
+        
+    Raises:
+        HTTPException: 404 Not Found if transaction doesn't exist
+        HTTPException: 400 Bad Request if validation fails
+        HTTPException: 500 Internal Server Error if update fails
+    """
+    try:
+        updated_transaction = transaction_service.update_transaction(transaction_id, transaction_data)
+        if updated_transaction is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction with ID '{transaction_id}' not found"
+            )
+        return updated_transaction
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid transaction data: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while updating the transaction: {str(e)}"
+        )
+
+
+@app.delete(
+    "/transactions/{transaction_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a transaction",
+    description="Delete a transaction by its unique identifier."
+)
+async def delete_transaction(transaction_id: str):
+    """
+    Delete a transaction by ID.
+    
+    Args:
+        transaction_id: The unique identifier of the transaction
+        
+    Raises:
+        HTTPException: 404 Not Found if transaction doesn't exist
+        HTTPException: 500 Internal Server Error if deletion fails
+    """
+    try:
+        deleted = transaction_service.delete_transaction(transaction_id)
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Transaction with ID '{transaction_id}' not found"
+            )
+        # Return 204 No Content (no response body needed)
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred while deleting the transaction: {str(e)}"
+        )
+
 
 
 @app.exception_handler(ValueError)

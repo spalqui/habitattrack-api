@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "HabitatTrack API",
-    "description": "Complete collection for the HabitatTrack API. This collection includes all CRUD operations for property and transaction category management with sample data and proper error handling.",
+    "description": "Complete collection for the HabitatTrack API. This collection includes all CRUD operations for property, transaction category, and transaction management with sample data and proper error handling.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "habitattrack-property-api-collection",
     "version": {
@@ -25,6 +25,11 @@
       "key": "category_id",
       "value": "",
       "description": "Transaction category ID for testing specific category operations"
+    },
+    {
+      "key": "transaction_id",
+      "value": "",
+      "description": "Transaction ID for testing specific transaction operations"
     }
   ],
   "item": [
@@ -1092,6 +1097,545 @@
         }
       ],
       "description": "All transaction category-related endpoints including CRUD operations with comprehensive examples and test scenarios."
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Create Transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.collectionVariables.set('transaction_id', responseJson.id);",
+                  "    pm.test('Transaction created successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('date_created');",
+                  "        pm.expect(responseJson.transaction_type).to.eql('income');",
+                  "        pm.expect(responseJson.amount).to.eql(1200);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"{{category_id}}\",\n  \"amount\": 1200.00,\n  \"description\": \"Monthly rent payment from tenant\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"{{property_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"]
+            },
+            "description": "Create a new transaction with the provided details. ID and date_created are auto-generated."
+          },
+          "response": [
+            {
+              "name": "Success - Transaction Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"category-guid-example\",\n  \"amount\": 1200.00,\n  \"description\": \"Monthly rent payment from tenant\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"property-guid-example\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"transaction-guid-example\",\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"category-guid-example\",\n  \"amount\": 1200.00,\n  \"description\": \"Monthly rent payment from tenant\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"property-guid-example\",\n  \"date_created\": \"2024-01-15T10:30:00Z\"\n}"
+            },
+            {
+              "name": "Error - Validation Failed",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transaction_type\": \"income\",\n  \"amount\": -100\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Invalid transaction data: Amount must be positive\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?limit=100&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100",
+                  "description": "Maximum number of transactions to return (1-1000)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of transactions to skip"
+                },
+                {
+                  "key": "property_id",
+                  "value": "",
+                  "description": "Filter transactions by property ID",
+                  "disabled": true
+                },
+                {
+                  "key": "start_date",
+                  "value": "",
+                  "description": "Filter transactions from this date onwards",
+                  "disabled": true
+                },
+                {
+                  "key": "end_date",
+                  "value": "",
+                  "description": "Filter transactions up to this date",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retrieve a list of all transactions with optional filtering and pagination parameters."
+          },
+          "response": [
+            {
+              "name": "Success - Transactions List",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transactions?limit=100&offset=0",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "100"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n  {\n    \"id\": \"transaction-guid-1\",\n    \"transaction_type\": \"income\",\n    \"transaction_category_id\": \"category-guid-1\",\n    \"amount\": 1200.00,\n    \"description\": \"Monthly rent payment from tenant\",\n    \"transaction_date\": \"2024-01-15T09:00:00Z\",\n    \"property_id\": \"property-guid-1\",\n    \"date_created\": \"2024-01-15T10:30:00Z\"\n  },\n  {\n    \"id\": \"transaction-guid-2\",\n    \"transaction_type\": \"expense\",\n    \"transaction_category_id\": \"category-guid-2\",\n    \"amount\": 250.00,\n    \"description\": \"Plumber repair work\",\n    \"transaction_date\": \"2024-01-16T14:20:00Z\",\n    \"property_id\": \"property-guid-1\",\n    \"date_created\": \"2024-01-16T14:25:00Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get All Transactions - With Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?property_id={{property_id}}&start_date=2024-01-01T00:00:00Z&end_date=2024-01-31T23:59:59Z&limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"],
+              "query": [
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}",
+                  "description": "Filter transactions by property ID"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01T00:00:00Z",
+                  "description": "Filter transactions from this date onwards"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31T23:59:59Z",
+                  "description": "Filter transactions up to this date"
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Maximum number of transactions to return"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of transactions to skip"
+                }
+              ]
+            },
+            "description": "Example of retrieving transactions with filtering by property and date range."
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test('Transaction retrieved successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson).to.have.property('transaction_type');",
+                  "        pm.expect(responseJson).to.have.property('amount');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transaction_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transaction_id}}"]
+            },
+            "description": "Retrieve a specific transaction by its unique identifier. Uses the transaction_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Transaction Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transactions/transaction-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "transaction-guid-example"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"transaction-guid-example\",\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"category-guid-example\",\n  \"amount\": 1200.00,\n  \"description\": \"Monthly rent payment from tenant\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"property-guid-example\",\n  \"date_created\": \"2024-01-15T10:30:00Z\"\n}"
+            },
+            {
+              "name": "Error - Transaction Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transactions/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction with ID 'non-existent-id' not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    pm.test('Transaction updated successfully', function () {",
+                  "        pm.expect(responseJson).to.have.property('id');",
+                  "        pm.expect(responseJson.description).to.eql('Updated: Monthly rent payment from tenant - January 2024');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"{{category_id}}\",\n  \"amount\": 1250.00,\n  \"description\": \"Updated: Monthly rent payment from tenant - January 2024\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"{{property_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transaction_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transaction_id}}"]
+            },
+            "description": "Update an existing transaction with the provided details. Uses the transaction_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Transaction Updated",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 1250.00,\n  \"description\": \"Updated: Monthly rent payment from tenant - January 2024\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions/transaction-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "transaction-guid-example"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"id\": \"transaction-guid-example\",\n  \"transaction_type\": \"income\",\n  \"transaction_category_id\": \"category-guid-example\",\n  \"amount\": 1250.00,\n  \"description\": \"Updated: Monthly rent payment from tenant - January 2024\",\n  \"transaction_date\": \"2024-01-15T09:00:00Z\",\n  \"property_id\": \"property-guid-example\",\n  \"date_created\": \"2024-01-15T10:30:00Z\"\n}"
+            },
+            {
+              "name": "Error - Transaction Not Found",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 1250.00\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction with ID 'non-existent-id' not found\"\n}"
+            },
+            {
+              "name": "Error - Validation Failed",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": -100\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/transactions/transaction-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "transaction-guid-example"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Invalid transaction data: Amount must be positive\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Partial Update Transaction",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description only - all other fields remain unchanged\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transaction_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transaction_id}}"]
+            },
+            "description": "Example of partial update - only updating the description field while leaving other fields unchanged."
+          }
+        },
+        {
+          "name": "Delete Transaction",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Transaction deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions/{{transaction_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions", "{{transaction_id}}"]
+            },
+            "description": "Delete a transaction by its unique identifier. Uses the transaction_id collection variable."
+          },
+          "response": [
+            {
+              "name": "Success - Transaction Deleted",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transactions/transaction-guid-example",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "transaction-guid-example"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": null,
+              "header": [],
+              "cookie": [],
+              "body": null
+            },
+            {
+              "name": "Error - Transaction Not Found",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/transactions/non-existent-id",
+                  "host": ["{{base_url}}"],
+                  "path": ["transactions", "non-existent-id"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n  \"detail\": \"Transaction with ID 'non-existent-id' not found\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "All transaction-related endpoints including CRUD operations with comprehensive examples and test scenarios."
     }
   ],
   "auth": {
